@@ -9,7 +9,7 @@ interface TimerBlock {
 }
 
 interface User {
-  username: string;
+  email: string;
 }
 
 const formatTime = (seconds: number): string => {
@@ -28,15 +28,19 @@ const PomodoroTimer: React.FC = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(true)
   const [user, setUser] = useState<User | null>(null)
   const [exportMenuOpen, setExportMenuOpen] = useState<boolean>(false)
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [isLogin, setIsLogin] = useState<boolean>(true)
 
-  const playSound = () => {
-    if (isSoundEnabled) {
-      const audio = new Audio('/notification.mp3')
-      audio.play()
-    }
-  }
 
   useEffect(() => {
+    const playSound = () => {
+      if (isSoundEnabled) {
+        const audio = new Audio('/notification.mp3')
+        audio.play()
+      }
+    }
+
     let interval: NodeJS.Timeout | null = null
     if (isRunning) {
       interval = setInterval(() => {
@@ -54,7 +58,7 @@ const PomodoroTimer: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isRunning, playSound])
+  }, [isRunning, isSoundEnabled])
 
   useEffect(() => {
     const storedBlocks = localStorage.getItem('pomodoroBlocks')
@@ -66,6 +70,22 @@ const PomodoroTimer: React.FC = () => {
       setUser(JSON.parse(storedUser))
     }
   }, [])
+
+  const handleAuth = (e: React.FormEvent) => {
+    e.preventDefault()
+    // In a real application, you would handle authentication with a backend service
+    // For this example, we'll just simulate a successful login/signup
+    const newUser = { email }
+    setUser(newUser)
+    localStorage.setItem('user', JSON.stringify(newUser))
+    setEmail('')
+    setPassword('')
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    localStorage.removeItem('user')
+  }
 
   const toggleTimer = () => {
     if (time === 0) {
@@ -98,7 +118,6 @@ const PomodoroTimer: React.FC = () => {
     localStorage.setItem('pomodoroBlocks', JSON.stringify(updatedBlocks))
     setTitle('')
     setNotes('')
-    playSound()
   }
 
   const generateCSV = () => {
@@ -156,24 +175,48 @@ ${block.notes}
     window.location.href = url
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('user')
-  }
-
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
       <nav className="bg-black p-4 text-white">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Pomodoro Timer</h1>
-          {user && (
+          {user ? (
             <div className="flex items-center">
-              <span className="mr-4">Welcome, {user.username}</span>
-              <button onClick={logout} className="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+              <span className="mr-4">{user.email}</span>
+              <button onClick={handleLogout} className="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
                 <LogOut className="mr-2" size={18} />
                 Logout
               </button>
             </div>
+          ) : (
+            <form onSubmit={handleAuth} className="flex items-center">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mr-2 p-2 rounded text-black"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mr-2 p-2 rounded text-black"
+                required
+              />
+              <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                {isLogin ? 'Login' : 'Sign Up'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="ml-2 text-blue-300 hover:text-blue-100"
+              >
+                {isLogin ? 'Need an account?' : 'Have an account?'}
+              </button>
+            </form>
           )}
         </div>
       </nav>
@@ -276,7 +319,7 @@ ${block.notes}
                       Export to Apple Notes
                     </button>
                     <button onClick={() => exportToMarkdownApp('obsidian')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Export to Obsidian
+                      Export to  Obsidian
                     </button>
                   </div>
                 )}
