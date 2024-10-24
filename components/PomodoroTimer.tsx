@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, RotateCcw, Save, Download, Volume2, VolumeX, LogOut } from 'lucide-react'
+import { Play, Pause, RotateCcw, Save, Download, Volume2, VolumeX, LogOut, Menu, X } from 'lucide-react'
 
 interface TimerBlock {
   timestamp: string;
@@ -31,7 +31,7 @@ const PomodoroTimer: React.FC = () => {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [isLogin, setIsLogin] = useState<boolean>(true)
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   useEffect(() => {
     const playSound = () => {
@@ -73,18 +73,18 @@ const PomodoroTimer: React.FC = () => {
 
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real application, you would handle authentication with a backend service
-    // For this example, we'll just simulate a successful login/signup
     const newUser = { email }
     setUser(newUser)
     localStorage.setItem('user', JSON.stringify(newUser))
     setEmail('')
     setPassword('')
+    setMobileMenuOpen(false)
   }
 
   const handleLogout = () => {
     setUser(null)
     localStorage.removeItem('user')
+    setMobileMenuOpen(false)
   }
 
   const toggleTimer = () => {
@@ -180,44 +180,51 @@ ${block.notes}
       <nav className="bg-black p-4 text-white">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Pomodoro Timer</h1>
-          {user ? (
-            <div className="flex items-center">
-              <span className="mr-4">{user.email}</span>
-              <button onClick={handleLogout} className="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
-                <LogOut className="mr-2" size={18} />
-                Logout
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleAuth} className="flex items-center">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mr-2 p-2 rounded text-black"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mr-2 p-2 rounded text-black"
-                required
-              />
-              <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
-                {isLogin ? 'Login' : 'Sign Up'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-blue-300 hover:text-blue-100"
-              >
-                {isLogin ? 'Need an account?' : 'Have an account?'}
-              </button>
-            </form>
-          )}
+          <div className="md:hidden">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white">
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+          <div className={`md:flex ${mobileMenuOpen ? 'block' : 'hidden'} mt-4 md:mt-0`}>
+            {user ? (
+              <div className="flex flex-col md:flex-row items-center">
+                <span className="mr-4 mb-2 md:mb-0">{user.email}</span>
+                <button onClick={handleLogout} className="flex items-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                  <LogOut className="mr-2" size={18} />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleAuth} className="flex flex-col md:flex-row items-center">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mr-2 p-2 rounded text-black mb-2 md:mb-0 w-full md:w-auto"
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mr-2 p-2 rounded text-black mb-2 md:mb-0 w-full md:w-auto"
+                  required
+                />
+                <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto mb-2 md:mb-0">
+                  {isLogin ? 'Login' : 'Sign Up'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-blue-300 hover:text-blue-100 w-full md:w-auto"
+                >
+                  {isLogin ? 'Need an account?' : 'Have an account?'}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -232,7 +239,7 @@ ${block.notes}
             </label>
             <span className="ml-2 text-gray-600">50 min</span>
           </div>
-          <div className="flex justify-center space-x-4 mb-6">
+          <div className="flex flex-wrap justify-center space-x-2 space-y-2 md:space-y-0 mb-6">
             <button onClick={toggleTimer} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 flex items-center">
               {isRunning ? <Pause className="mr-2" size={18} /> : <Play className="mr-2" size={18} />}
               {isRunning ? 'Pause' : 'Start'}
@@ -272,32 +279,30 @@ ${block.notes}
         </div>
 
         {savedBlocks.length > 0 && (
-          <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-lg p-6 overflow-x-auto">
             <h3 className="text-xl font-bold mb-4">Saved Blocks</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full mb-4">
-                <thead>
-                  <tr>
-                    <th className="text-left text-gray-600 py-2">Timestamp</th>
-                    <th className="text-left text-gray-600 py-2">Duration</th>
-                    <th className="text-left text-gray-600 py-2">Title</th>
-                    <th className="text-left text-gray-600 py-2">Notes</th>
+            <table className="w-full mb-4">
+              <thead>
+                <tr>
+                  <th className="text-left text-gray-600 py-2">Timestamp</th>
+                  <th className="text-left text-gray-600 py-2">Duration</th>
+                  <th className="text-left text-gray-600 py-2">Title</th>
+                  <th className="text-left text-gray-600 py-2">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {savedBlocks.map((block, index) => (
+                  <tr key={index} className="border-t">
+                    <td className="py-2 text-gray-800">{new Date(block.timestamp).toLocaleString()}</td>
+                    <td className="py-2 text-gray-800">{formatTime(block.duration)}</td>
+                    <td className="py-2 text-gray-800">{block.title}</td>
+                    <td className="py-2 text-gray-800">
+                      <pre className="whitespace-pre-wrap">{block.notes}</pre>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {savedBlocks.map((block, index) => (
-                    <tr key={index} className="border-t">
-                      <td className="py-2 text-gray-800">{new Date(block.timestamp).toLocaleString()}</td>
-                      <td className="py-2 text-gray-800">{formatTime(block.duration)}</td>
-                      <td className="py-2 text-gray-800">{block.title}</td>
-                      <td className="py-2 text-gray-800">
-                        <pre className="whitespace-pre-wrap">{block.notes}</pre>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
             <div className="flex justify-end">
               <div className="relative">
                 <button 
@@ -307,7 +312,7 @@ ${block.notes}
                   <Download className="mr-2" size={18} />
                   Export
                 </button>
-                {exportMenuOpen && (
+                {exportMenuOpen  && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                     <button onClick={generateCSV} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       Export as CSV
@@ -319,7 +324,7 @@ ${block.notes}
                       Export to Apple Notes
                     </button>
                     <button onClick={() => exportToMarkdownApp('obsidian')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Export to  Obsidian
+                      Export to Obsidian
                     </button>
                   </div>
                 )}
