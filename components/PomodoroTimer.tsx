@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Play, Pause, RotateCcw, Save, Download, Volume2, VolumeX, LogOut, Menu, X } from 'lucide-react'
+import { Play, Pause, RotateCcw, Save, Download, Volume2, VolumeX, LogOut, Menu, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface TimerBlock {
   timestamp: string;
@@ -24,7 +24,7 @@ const formatHoursMinutes = (seconds: number): string => {
   return `${hours}:${minutes.toString().padStart(2, '0')}`
 }
 
-const PomodoroTimer: React.FC = () => {
+export default function PomodoroTimer() {
   const [time, setTime] = useState<number>(25 * 60)
   const [isRunning, setIsRunning] = useState<boolean>(false)
   const [isLongSession, setIsLongSession] = useState<boolean>(false)
@@ -38,6 +38,7 @@ const PomodoroTimer: React.FC = () => {
   const [password, setPassword] = useState<string>('')
   const [isLogin, setIsLogin] = useState<boolean>(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
+  const [isTableCollapsed, setIsTableCollapsed] = useState<boolean>(false)
 
   const dailySummaries = useMemo(() => {
     const summaries: { [key: string]: number } = {}
@@ -107,11 +108,13 @@ const PomodoroTimer: React.FC = () => {
       resetTimer()
     }
     setIsRunning(!isRunning)
+    setIsTableCollapsed(true)
   }
 
   const resetTimer = () => {
     setIsRunning(false)
     setTime(isLongSession ? 50 * 60 : 25 * 60)
+    setIsTableCollapsed(false)
   }
 
   const toggleSessionLength = () => {
@@ -191,17 +194,17 @@ ${block.notes}
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800">
+    <div className="min-h-screen bg-background text-foreground">
       <nav className="bg-primary text-primary-foreground shadow-md">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Pomodoro Timer</h1>
             <div className="md:hidden">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-primary-foreground">
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
-            <div className={`md:flex ${mobileMenuOpen ? 'block' : 'hidden'} mt-4 md:mt-0`}>
+            <div className={`md:flex ${mobileMenuOpen ? 'block' : 'hidden'} mt-4 md:mt-0 bg-primary md:bg-transparent p-4 md:p-0 rounded-lg md:rounded-none`}>
               {user ? (
                 <div className="flex flex-col md:flex-row items-center">
                   <span className="mr-4 mb-2 md:mb-0">{user.email}</span>
@@ -217,7 +220,7 @@ ${block.notes}
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mr-2 p-2 rounded text-black mb-2 md:mb-0 w-full md:w-auto"
+                    className="mr-2 p-2 rounded text-foreground bg-background mb-2 md:mb-0 w-full md:w-auto"
                     required
                   />
                   <input
@@ -225,7 +228,7 @@ ${block.notes}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mr-2 p-2 rounded text-black mb-2 md:mb-0 w-full md:w-auto"
+                    className="mr-2 p-2 rounded text-foreground bg-background mb-2 md:mb-0 w-full md:w-auto"
                     required
                   />
                   <button type="submit" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-2 px-4 rounded transition duration-300 w-full md:w-auto mb-2 md:mb-0">
@@ -234,7 +237,7 @@ ${block.notes}
                   <button
                     type="button"
                     onClick={() => setIsLogin(!isLogin)}
-                    className="text-accent-foreground hover:underline w-full md:w-auto"
+                    className="text-primary-foreground hover:underline w-full md:w-auto"
                   >
                     {isLogin ? 'Need an account?' : 'Have an account?'}
                   </button>
@@ -246,13 +249,13 @@ ${block.notes}
       </nav>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="bg-card text-card-foreground shadow-sm rounded-lg p-6 mb-6">
+        <div className="bg-secondary text-secondary-foreground shadow-sm rounded-lg p-6 mb-6">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center">{formatTime(time)}</h2>
           <div className="flex items-center justify-center mb-6">
             <span className="mr-2 text-muted-foreground">25 min</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked={isLongSession} onChange={toggleSessionLength} className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              <div className="w-11 h-6 bg-muted rounded-full peer peer-focus:ring-4 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
             <span className="ml-2 text-muted-foreground">50 min</span>
           </div>
@@ -261,11 +264,11 @@ ${block.notes}
               {isRunning ? <Pause className="mr-2" size={18} /> : <Play className="mr-2" size={18} />}
               {isRunning ? 'Pause' : 'Start'}
             </button>
-            <button onClick={resetTimer} className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-2 px-6 rounded-full transition duration-300 flex items-center">
+            <button onClick={resetTimer} className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-2 px-6 rounded-full transition duration-300 flex items-center">
               <RotateCcw className="mr-2" size={18} />
               Reset
             </button>
-            <button onClick={() => setIsSoundEnabled(!isSoundEnabled)} className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-2 px-6 rounded-full transition duration-300 flex items-center">
+            <button onClick={() => setIsSoundEnabled(!isSoundEnabled)} className="bg-muted hover:bg-muted/90 text-muted-foreground font-bold py-2 px-6 rounded-full transition duration-300 flex items-center">
               {isSoundEnabled ? <Volume2 className="mr-2" size={18} /> : <VolumeX className="mr-2" size={18} />}
               {isSoundEnabled ? 'Sound On' : 'Sound Off'}
             </button>
@@ -275,13 +278,13 @@ ${block.notes}
             placeholder="Block Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 mb-4 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full p-2 mb-4 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <textarea
             placeholder="Notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full p-2 mb-4 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full p-2 mb-4 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
             rows={3}
           />
           <button 
@@ -297,44 +300,56 @@ ${block.notes}
 
         {savedBlocks.length > 0 && (
           <div className="bg-card text-card-foreground shadow-sm rounded-lg p-6 overflow-x-auto">
-            <h3 className="text-xl font-bold mb-4">Saved Blocks</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full mb-4">
-                <thead>
-                  <tr>
-                    <th className="text-left text-muted-foreground py-2">Timestamp</th>
-                    <th className="text-left text-muted-foreground py-2">Duration</th>
-                    <th className="text-left text-muted-foreground py-2">Title</th>
-                    <th className="text-left text-muted-foreground py-2">Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {savedBlocks.map((block, index) => (
-                    <tr key={index} className="border-t border-border">
-                      <td className="py-2">{new Date(block.timestamp).toLocaleString()}</td>
-                      <td  className="py-2">{formatTime(block.duration)}</td>
-                      <td className="py-2">{block.title}</td>
-                      <td className="py-2">
-                        <pre className="whitespace-pre-wrap">{block.notes}</pre>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Saved Blocks</h3>
+              <button
+                onClick={() => setIsTableCollapsed(!isTableCollapsed)}
+                className="flex items-center text-muted-foreground hover:text-foreground transition-colors duration-200"
+              >
+                {isTableCollapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+                <span className="ml-2">{isTableCollapsed ? 'Expand' : 'Collapse'}</span>
+              
+              </button>
+            </div>
+            {!isTableCollapsed && (
+              <div className="overflow-x-auto">
+                <table className="w-full mb-4">
+                  <thead>
+                    <tr>
+                      <th className="text-left text-muted-foreground py-2">Timestamp</th>
+                      <th className="text-left text-muted-foreground py-2">Duration</th>
+                      <th className="text-left text-muted-foreground py-2">Title</th>
+                      <th className="text-left text-muted-foreground py-2">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {savedBlocks.map((block, index) => (
+                      <tr key={index} className="border-t border-border">
+                        <td className="py-2">{new Date(block.timestamp).toLocaleString()}</td>
+                        <td className="py-2">{formatTime(block.duration)}</td>
+                        <td className="py-2">{block.title}</td>
+                        <td className="py-2">
+                          <pre className="whitespace-pre-wrap">{block.notes}</pre>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t border-border font-bold">
+                      <td colSpan={4} className="py-2">
+                        Daily Summaries:
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-border font-bold">
-                    <td colSpan={4} className="py-2">
-                      Daily Summaries:
-                    </td>
-                  </tr>
-                  {dailySummaries.map((summary, index) => (
-                    <tr key={index} className="border-t border-border">
-                      <td colSpan={2} className="py-2">{summary.date}</td>
-                      <td colSpan={2} className="py-2">{formatHoursMinutes(summary.totalDuration)}</td>
-                    </tr>
-                  ))}
-                </tfoot>
-              </table>
-            </div>
+                    {dailySummaries.map((summary, index) => (
+                      <tr key={index} className="border-t border-border">
+                        <td colSpan={2} className="py-2">{summary.date}</td>
+                        <td colSpan={2} className="py-2">{formatHoursMinutes(summary.totalDuration)}</td>
+                      </tr>
+                    ))}
+                  </tfoot>
+                </table>
+              </div>
+            )}
             <div className="flex justify-end">
               <div className="relative">
                 <button 
@@ -345,17 +360,17 @@ ${block.notes}
                   Export
                 </button>
                 {exportMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg z-10">
-                    <button onClick={generateCSV} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+                  <div className="absolute right-0 mt-2 w-48 bg-popover text-popover-foreground rounded-md shadow-lg z-10">
+                    <button onClick={generateCSV} className="block w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                       Export as CSV
                     </button>
-                    <button onClick={() => exportToMarkdownApp('bear')} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+                    <button onClick={() => exportToMarkdownApp('bear')} className="block w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                       Export to Bear
                     </button>
-                    <button onClick={() => exportToMarkdownApp('apple-notes')} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+                    <button onClick={() => exportToMarkdownApp('apple-notes')} className="block w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                       Export to Apple Notes
                     </button>
-                    <button onClick={() => exportToMarkdownApp('obsidian')} className="block w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+                    <button onClick={() => exportToMarkdownApp('obsidian')} className="block w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
                       Export to Obsidian
                     </button>
                   </div>
@@ -368,5 +383,3 @@ ${block.notes}
     </div>
   )
 }
-
-export default PomodoroTimer
